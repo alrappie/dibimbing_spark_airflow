@@ -27,13 +27,17 @@ docker-build:
 	@echo '__________________________________________________________'
 	@chmod 777 logs/
 	@chmod 777 notebooks/
-	@docker network inspect dataeng-network >/dev/null 2>&1 || docker network create dataeng-network
+	@docker network inspect dataeng-network >/dev/null 2>&1 || docker network create --attachable --driver bridge dataeng-network
 	@echo '__________________________________________________________'
 	@docker build -t dataeng-dibimbing/spark -f ./docker/Dockerfile.spark .
 	@echo '__________________________________________________________'
 	@docker build -t dataeng-dibimbing/airflow -f ./docker/Dockerfile.airflow .
 	@echo '__________________________________________________________'
 	@docker build -t dataeng-dibimbing/jupyter -f ./docker/Dockerfile.jupyter .
+	@echo '__________________________________________________________'
+	@docker build -t dataeng-dibimbing/ollama -f ./docker/Dockerfile.ollama .
+	@echo '__________________________________________________________'
+	@echo 'Images built successfully!'
 	@echo '==========================================================='
 
 docker-build-windows:
@@ -161,6 +165,14 @@ kafka-create-topic:
 		--replication-factor ${KAFKA_REPLICATION} \
 		--bootstrap-server localhost:9092 \
 		--topic ${topic}
+
+ollama:
+	@echo '__________________________________________________________'
+	@echo 'Running Ollama & WebUI...'
+	@echo '__________________________________________________________'
+	@docker compose -f ./docker/docker-compose-ollama.yml up
+	@echo 'Ollama & WebUI built successfully!'
+	@echo '==========================================================='
 
 spark-produce:
 	@echo '__________________________________________________________'

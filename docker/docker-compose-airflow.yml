@@ -16,11 +16,15 @@ services:
             - POSTGRES_PORT=${POSTGRES_PORT}
             - SPARK_MASTER_HOST_NAME=${SPARK_MASTER_HOST_NAME}
             - SPARK_MASTER_PORT=${SPARK_MASTER_PORT}
+            - PYTHONPATH=/opt/airflow
         volumes:
             - ../dags:/opt/airflow/dags
             - ../logs:/opt/airflow/logs
             - ../spark-scripts:/spark-scripts
             - ../scripts:/scripts
+            - ../utils:/opt/airflow/utils
+        networks:
+            - dataeng-network
 
     webserver:
         image: dataeng-dibimbing/airflow
@@ -46,10 +50,13 @@ services:
             - ../logs:/opt/airflow/logs
             - ../spark-scripts:/spark-scripts
             - ../scripts:/scripts
+            - ../utils:/utils
         ports:
             - ${AIRFLOW_WEBSERVER_PORT}:8080
+        networks:
+            - dataeng-network
 
 networks:
-    default:
-        name: dataeng-network
-        external: true
+  dataeng-network:
+    name: dataeng-network
+    external: true

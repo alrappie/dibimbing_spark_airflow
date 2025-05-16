@@ -1,0 +1,54 @@
+services:
+  ollama:
+    image: dataeng-dibimbing/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"  # Changed from 8888:11434 to keep internal port consistent
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]  # Simplified healthcheck
+      start_period: 180s
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:  # Explicitly attach to the network
+      - dataeng-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - OLLAMA_LLM_LIBRARY=cuda
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:cuda
+    container_name: dataeng-open-webui
+    ports:
+      - "3000:8080"
+    restart: always
+    volumes:
+      - open-webui:/app/backend/data
+    networks:  # Explicitly attach to the network
+      - dataeng-network
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - OLLAMA_API_BASE_URL=http://ollama:11434  # Using Docker's internal DNS
+      - WEBUI_FORCE_INIT_CONFIG=True  
+
+volumes:
+  ollama_data:
+  open-webui:
+
+networks:
+  dataeng-network:
+    name: dataeng-network
+    external: true

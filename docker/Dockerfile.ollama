@@ -1,0 +1,12 @@
+FROM ollama/ollama
+
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Expose the Ollama API port
+EXPOSE 11434
+
+COPY ./scripts/ollama_entrypoint.sh /ollama_entrypoint.sh
+RUN chmod +x /ollama_entrypoint.sh
+
+ENTRYPOINT ["/ollama_entrypoint.sh"]

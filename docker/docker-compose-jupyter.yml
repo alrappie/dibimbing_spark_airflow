@@ -1,19 +1,29 @@
 services:
-    dibimbing-dataeng-jupyter:
-        container_name: ${JUPYTER_CONTAINER_NAME}
-        hostname: ${JUPYTER_CONTAINER_NAME}
-        image: dataeng-dibimbing/jupyter
-        environment:
-            - JUPYTER_ALLOW_INSECURE_WRITES=true
-        ports:
-            - ${JUPYTER_PORT}:8888
-            - 4040:4040
-            - 4041:4041
-        volumes:
-            - ../:/resources
-            - ../notebooks:/home/jovyan/
+  dibimbing-dataeng-jupyter:
+    container_name: ${JUPYTER_CONTAINER_NAME}
+    hostname: ${JUPYTER_CONTAINER_NAME}
+    image: dataeng-dibimbing/jupyter
+    environment:
+      - JUPYTER_ALLOW_INSECURE_WRITES=true
+      - NVIDIA_VISIBLE_DEVICES=all         # <- GPU visibility
+    ports:
+      - ${JUPYTER_PORT}:8888
+      - 4040:4040
+      - 4041:4041
+    volumes:
+      - ../:/resources
+      - ../notebooks:/home/jovyan/
+    networks:
+      - dataeng-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]          # <- Reserve GPU
+
+    runtime: nvidia  # <-- Add this line **if using Docker < 20.10**
 
 networks:
-    default:
-        name: dataeng-network
-        external: true
+  dataeng-network:
+    name: dataeng-network
+    external: true
